@@ -1,0 +1,39 @@
+<div class="dialog-backdrop" (click)="closed.emit()">
+  <form class="dialog" appDialog aria-labelledby="path-title" (dismiss)="closed.emit()" (submit)="$event.preventDefault(); submit()">
+    <h2 id="path-title">Bibliotheksordner</h2>
+    <p>
+      @if (currentPath()) {
+        Aktuell: <strong>{{ currentPath() }}</strong>
+      } @else {
+        Der gewählte Ordner bleibt gespeichert, bis du ihn änderst.
+      }
+    </p>
+    <div class="dialog-actions dialog-actions-stack">
+      <button type="button" class="btn btn-primary" autofocus (click)="pickFolder.emit()" [disabled]="busy()">
+        Ordner auswählen …
+      </button>
+      <button type="button" class="btn btn-ghost" (click)="showManual.set(!showManual())" [disabled]="busy()" [attr.aria-expanded]="showManual()">
+        {{ showManual() ? 'Manuelle Eingabe ausblenden' : 'Pfad manuell eingeben' }}
+      </button>
+    </div>
+    @if (showManual()) {
+      <label class="field field-spaced">
+        <span>Absoluter Pfad</span>
+        <input
+          type="text"
+          name="path"
+          autocomplete="off"
+          placeholder="/Users/…/3D-Druck"
+          [value]="pathDraft()"
+          (input)="pathDraft.set($any($event.target).value)"
+        />
+      </label>
+    }
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" (click)="closed.emit()" [disabled]="busy()">Schließen</button>
+      @if (showManual()) {
+        <button type="submit" class="btn btn-primary" [disabled]="busy() || !pathDraft().trim()">Pfad speichern</button>
+      }
+    </div>
+  </form>
+</div>

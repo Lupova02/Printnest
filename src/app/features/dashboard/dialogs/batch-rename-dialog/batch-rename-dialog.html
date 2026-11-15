@@ -1,0 +1,94 @@
+<div class="dialog-backdrop" (click)="closed.emit()">
+  <form class="dialog batch-dialog" appDialog aria-labelledby="batch-title" (dismiss)="closed.emit()" (submit)="$event.preventDefault(); submit()">
+    <h2 id="batch-title">Stapelumbenennung</h2>
+    <p>{{ entries().length }} {{ entries().length === 1 ? 'Eintrag' : 'Einträge' }} in „{{ folderLabel() }}“ · alles in einem Schritt, mit <kbd>⌘Z</kbd> rückgängig.</p>
+
+    <div class="modes" role="radiogroup" aria-label="Art der Umbenennung">
+      <button type="button" role="radio" [attr.aria-checked]="mode() === 'clean'" [class.is-active]="mode() === 'clean'" (click)="setMode('clean')">Bereinigen</button>
+      <button type="button" role="radio" [attr.aria-checked]="mode() === 'schema'" [class.is-active]="mode() === 'schema'" (click)="setMode('schema')">Schema</button>
+      <button type="button" role="radio" [attr.aria-checked]="mode() === 'replace'" [class.is-active]="mode() === 'replace'" (click)="setMode('replace')">Suchen &amp; Ersetzen</button>
+    </div>
+
+    <div class="options">
+      @switch (mode()) {
+        @case ('clean') {
+          <p class="hint">Unterstriche, doppelte Leerzeichen, „final“, „(1)“, „copy“ und IDs entfernen; Druckparameter werden zu Tags.</p>
+        }
+        @case ('schema') {
+          <label class="field">
+            <span>Schema</span>
+            <select [value]="presetId()" (change)="presetId.set($any($event.target).value); manual.set({})">
+              @if (folderSchema()) {
+                <option value="folder" [selected]="presetId() === 'folder'">Ordner-Schema ({{ schemaLabel() }})</option>
+              }
+              @for (p of presets; track p.id) {
+                <option [value]="p.id" [selected]="presetId() === p.id">{{ p.label }}</option>
+              }
+            </select>
+          </label>
+          <label class="check">
+            <input type="checkbox" [checked]="rememberSchema()" (change)="rememberSchema.set($any($event.target).checked)" />
+            Als Schema für „{{ folderLabel() }}“ merken
+          </label>
+        }
+        @case ('replace') {
+          <div class="replace">
+            <label class="field"><span>Suchen</span><input type="text" [value]="find()" (input)="find.set($any($event.target).value); manual.set({})" /></label>
+            <label class="field"><span>Ersetzen durch</span><input type="text" [value]="replaceWith()" (input)="replaceWith.set($any($event.target).value); manual.set({})" /></label>
+          </div>
+        }
+      }
+      @if (has3mf() && mode() !== 'replace') {
+        <label class="check">
+          <input type="checkbox" [checked]="use3mfTitle()" (change)="use3mfTitle.set($any($event.target).checked); manual.set({})" />
+          Titel aus 3MF-Metadaten verwenden
+        </label>
+      }
+    </div>
+
+    <div class="table" role="table" aria-label="Vorher und nachher">
+      <div class="tr th" role="row">
+        <span role="columnheader"><span class="sr-only">Einbeziehen</span></span>
+        <span role="columnheader">Vorher</span>
+        <span role="columnheader">Nachher</span>
+      </div>
+      @for (row of rows(); track row.entry.id) {
+        @let d = diff(row.before, row.after);
+        @let conflict = conflicts().get(row.entry.id);
+        <div class="tr" role="row" [class.is-off]="!row.include" [class.is-conflict]="!!conflict">
+          <span role="cell">
+            <input type="checkbox" [attr.aria-label]="row.before + ' einbeziehen'" [checked]="row.include" (change)="toggle(row.entry, $any($event.target).checked)" />
+          </span>
+          <span role="cell" class="before" [title]="row.before">{{ d.prefix }}<del>{{ d.removed }}</del>{{ d.suffix }}</span>
+          <span role="cell" class="after">
+            <input type="text" [attr.aria-label]="'Neuer Name für ' + row.before" [value]="row.after" [disabled]="!row.include" (input)="edit(row.entry, $any($event.target).value)" />
+            @if (row.after !== row.before) {
+              <span class="diff" aria-hidden="true">{{ d.prefix }}<ins>{{ d.added }}</ins>{{ d.suffix }}</span>
+            }
+            @if (tagsFor(row.before).length) {
+              <span class="tags">
+                @for (tag of tagsFor(row.before); track tag) {
+                  <span class="tag">{{ tag }}</span>
+                }
+              </span>
+            }
+            @if (conflict) {
+              <span class="conflict" role="alert"><app-icon name="warning" /> {{ conflict }}</span>
+            }
+          </span>
+        </div>
+      }
+    </div>
+
+    <div class="dialog-actions">
+      <span class="summary" aria-live="polite">
+        {{ ops().length }} {{ ops().length === 1 ? 'Änderung' : 'Änderungen' }}
+        @if (conflicts().size) {
+          · {{ conflicts().size }} {{ conflicts().size === 1 ? 'Konflikt' : 'Konflikte' }}
+        }
+      </span>
+      <button type="button" class="btn btn-ghost" (click)="closed.emit()" [disabled]="busy()">Abbrechen</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!canApply()">Umbenennen</button>
+    </div>
+  </form>
+</div>

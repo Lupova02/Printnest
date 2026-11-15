@@ -1,0 +1,98 @@
+<div class="dialog-backdrop preview-backdrop" (click)="close()">
+  <div
+    class="dialog preview-dialog"
+    appDialog
+    aria-labelledby="preview-title"
+    (dismiss)="close()"
+    (keydown)="onKeydown($event)"
+  >
+    <header class="head">
+      <div class="nav">
+        <button type="button" class="icon-btn" aria-label="Vorherige Datei" title="Vorherige Datei (← / ↑)" [disabled]="!hasPrev()" (click)="step('prev')">
+          <app-icon name="chevron-left" />
+        </button>
+        <button type="button" class="icon-btn" aria-label="Nächste Datei" title="Nächste Datei (→ / ↓)" [disabled]="!hasNext()" (click)="step('next')">
+          <app-icon name="chevron" />
+        </button>
+      </div>
+      <div class="title">
+        <h2 id="preview-title">{{ entry().name }}</h2>
+        <p>
+          {{ kindLabel(entry()) }} · {{ formatSize(entry().size) }} · {{ entry().parentLabel || 'Bibliothek' }}
+          @if (position()) {
+            <span class="pos">· {{ position() }}</span>
+          }
+        </p>
+      </div>
+      <button type="button" class="icon-btn" aria-label="Vorschau schließen" title="Schließen (Leertaste / Esc)" (click)="close()">
+        <app-icon name="close" />
+      </button>
+    </header>
+
+    <div class="body">
+      <div class="stage">
+        <app-file-preview [kind]="entry().kind" [relativePath]="entry().relativePath" [version]="version()" />
+      </div>
+
+      <aside class="side" [attr.aria-label]="rateable() ? 'Druckinformationen' : 'Notiz'">
+        @if (rateable()) {
+          <section class="rating">
+            <h3>Bewertung</h3>
+            <app-star-rating [value]="entry().rating" label="Druck-Bewertung" (rate)="rate.emit($event)" />
+            <p class="hint">Tasten <kbd>1</kbd>–<kbd>5</kbd>, <kbd>0</kbd> entfernt</p>
+          </section>
+
+          <label class="field printed">
+            <span>Gedruckt am</span>
+            <div class="date-row">
+              <input type="date" [value]="printedAt()" (change)="onDateInput($any($event.target).value)" />
+              <button type="button" class="btn btn-ghost btn-tiny" (click)="today()">Heute</button>
+            </div>
+          </label>
+        } @else {
+          <p class="hint video-keys">
+            <kbd>K</kbd> Play/Pause · <kbd>M</kbd> Ton · <kbd>F</kbd> Vollbild · <kbd>⇧←</kbd>/<kbd>⇧→</kbd> ±5 s
+          </p>
+        }
+
+        <label class="field note">
+          <span>Notiz</span>
+          <textarea
+            rows="5"
+            [attr.maxlength]="noteMax"
+            [placeholder]="rateable() ? 'z. B. PLA, 0,2 mm, Stützen nötig' : 'z. B. Timelapse vom ersten Druck'"
+            [value]="note()"
+            (input)="onNoteInput($any($event.target).value)"
+            (blur)="flush()"
+          ></textarea>
+          <span class="counter" aria-live="polite">
+            {{ note().length }} / {{ noteMax }}
+            @switch (saveState()) {
+              @case ('dirty') { · wird gespeichert … }
+              @case ('saving') { · wird gespeichert … }
+              @case ('saved') { · gespeichert }
+              @case ('error') { · Speichern fehlgeschlagen }
+            }
+          </span>
+        </label>
+
+        <div class="actions">
+          @if (showSlicer()) {
+            @if (slicerName()) {
+              <button type="button" class="btn btn-primary" (click)="openSlicer.emit()">
+                <app-icon name="cube" /> In {{ slicerName() }} öffnen
+              </button>
+            } @else {
+              <button type="button" class="btn btn-ghost" (click)="chooseSlicer.emit()">
+                <app-icon name="settings" /> Slicer in den Einstellungen wählen …
+              </button>
+            }
+          }
+          <button type="button" class="btn btn-ghost" (click)="reveal.emit()">
+            <app-icon name="finder" /> Im Finder zeigen
+          </button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>

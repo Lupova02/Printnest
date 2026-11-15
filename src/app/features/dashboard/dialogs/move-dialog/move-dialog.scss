@@ -1,0 +1,119 @@
+:host {
+  display: contents;
+}
+
+.move-dialog {
+  width: min(100%, 440px);
+}
+
+.move-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.35rem;
+  margin: 0.85rem 0 0.55rem;
+  font-size: 0.88rem;
+}
+
+.move-crumbs .crumb {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.move-crumbs .crumb:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.move-crumbs .crumb:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.move-crumbs .crumb.is-current {
+  color: var(--ink);
+  cursor: default;
+}
+
+.move-crumbs .crumb-sep {
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
+
+.move-folder-list {
+  max-height: min(42vh, 280px);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-sunken);
+}
+
+.move-folder-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem;
+}
+
+.move-state {
+  margin: 0;
+  padding: 1rem 0.9rem;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.move-state.is-error {
+  color: var(--danger);
+}
+
+.move-folder-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.4rem 1fr auto;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.6rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.move-folder-row:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.move-folder-row:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.move-folder-icon {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+}
+
+.move-folder-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.move-folder-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.move-folder-chevron {
+  color: var(--ink-soft);
+  font-size: 1.1rem;
+  line-height: 1;
+}

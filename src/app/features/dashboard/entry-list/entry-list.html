@@ -1,0 +1,103 @@
+<div
+  class="entries"
+  [class.is-grid]="layout() === 'grid'"
+  [class.is-list]="layout() === 'list'"
+  [class.is-animating]="animateIn()"
+  [style.height.px]="totalHeight()"
+  role="listbox"
+  aria-label="Einträge"
+  aria-multiselectable="true"
+  aria-orientation="vertical"
+>
+  <div
+    class="window"
+    [style.transform]="'translateY(' + windowOffset() + 'px)'"
+    [style.grid-template-columns]="layout() === 'grid' ? 'repeat(' + columns() + ', minmax(0, 1fr))' : null"
+    [style.grid-auto-rows.px]="layout() === 'grid' ? cardHeight() : null"
+  >
+    @for (row of windowItems(); track row.entry.id) {
+      @let item = row.entry;
+      @let i = row.index;
+      <div
+        class="entry"
+        role="option"
+        [attr.data-entry-id]="item.id"
+        [attr.aria-selected]="isSelected(item.id)"
+        [attr.aria-setsize]="entries().length"
+        [attr.aria-posinset]="i + 1"
+        [attr.tabindex]="item.id === focusId() ? 0 : -1"
+        [class.is-selected]="isSelected(item.id)"
+        [class.is-drop]="dropTarget() === item.id"
+        [class.is-odd]="i % 2 === 1"
+        [class.folder-break]="folderBreak(i)"
+        [class.has-origin]="showOrigin() && item.type !== 'folder'"
+        [style.--i]="i < 24 ? i : 24"
+        draggable="true"
+        (click)="onClick(item, $event)"
+        (dblclick)="openEntry.emit(item)"
+        (contextmenu)="onContextMenu(item, $event)"
+        (keydown.shift.f10)="openMenuFrom(item, $event)"
+        (keydown.contextmenu)="openMenuFrom(item, $event)"
+        (dragstart)="onDragStart(item, $event)"
+        (dragend)="onDragEnd()"
+        (dragover)="onDragOver(item, $event)"
+        (dragleave)="onDragLeave(item)"
+        (drop)="onDrop(item, $event)"
+      >
+        <app-entry-thumb [entry]="item" [size]="layout() === 'grid' ? 'card' : 'row'" />
+
+        <div class="main">
+          <span class="name" [title]="item.name">{{ item.name }}</span>
+          <span class="sub">
+            {{ kindLabel(item) }}
+            @if (item.type === 'folder') {
+              · {{ item.childCount ?? '–' }} {{ item.childCount === 1 ? 'Eintrag' : 'Einträge' }}
+            } @else if (isLink(item)) {
+              · {{ item.linkMeta?.portalLabel ? item.linkMeta?.portalLabel + ' · ' : '' }}{{ item.url }}
+            } @else if (layout() === 'grid') {
+              · {{ formatSize(item.size) }}
+            }
+          </span>
+          @if (showOrigin() && item.type !== 'folder') {
+            <button
+              type="button"
+              class="origin"
+              tabindex="-1"
+              aria-hidden="true"
+              title="Ordner öffnen"
+              (click)="$event.stopPropagation(); openParent.emit(item)"
+            >
+              <app-icon name="folder" />{{ item.parentLabel || 'Bibliothek' }}
+            </button>
+          }
+        </div>
+
+        <div class="rating" aria-hidden="true">
+          @if (canRate(item)) {
+            <app-star-rating [value]="item.rating" [compact]="true" (rate)="rate.emit({ entry: item, rating: $event })" />
+          }
+        </div>
+        @if (item.rating && canRate(item)) {
+          <span class="sr-only">, {{ item.rating }} von 5 Sternen</span>
+        }
+
+        @if (layout() === 'list') {
+          <span class="col size">{{ item.type === 'file' ? formatSize(item.size) : '' }}</span>
+          <span class="col date">{{ item.updatedAt ? (item.updatedAt | date: 'dd.MM.yyyy, HH:mm') : '' }}</span>
+        }
+
+        <button
+          type="button"
+          class="icon-btn more"
+          tabindex="-1"
+          aria-hidden="true"
+          title="Aktionen"
+          (click)="openMenuFrom(item, $event)"
+          (dblclick)="$event.stopPropagation()"
+        >
+          <app-icon name="more" />
+        </button>
+      </div>
+    }
+  </div>
+</div>

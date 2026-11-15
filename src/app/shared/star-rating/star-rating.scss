@@ -1,0 +1,69 @@
+:host {
+  display: inline-flex;
+}
+
+.stars {
+  display: inline-flex;
+  gap: 1px;
+}
+
+.star {
+  width: 22px;
+  height: 22px;
+  padding: 2px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--star-empty);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition:
+    color var(--dur-fast) ease,
+    transform var(--dur-fast) ease;
+}
+
+.star svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.star.is-on {
+  color: var(--star);
+}
+
+.star.is-on.is-preview {
+  transform: scale(1.08);
+}
+
+.star:disabled {
+  cursor: default;
+}
+
+.star.is-pop {
+  animation: star-pop var(--dur-slow) var(--ease-out);
+}
+
+:host(.is-compact) .star {
+  width: 18px;
+  height: 18px;
+  padding: 1px;
+}
+
+/* In Listen nur bewertete Sterne zeigen; unbewertet erst beim Hover der Zeile. */
+:host(.is-compact:not(.is-rated)) .star:not(.is-on) {
+  opacity: var(--stars-idle-opacity, 1);
+}
+
+@keyframes star-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.45) rotate(-8deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

@@ -1,0 +1,113 @@
+<div class="preview" [attr.data-kind]="kind()" [attr.aria-busy]="status() === 'loading'">
+  @switch (kind()) {
+    @case ('mp4') {
+      <app-video-player [src]="mediaUrl()" (ready)="onMediaReady()" (failed)="onMediaError()" />
+    }
+    @case ('img') {
+      <img [src]="mediaUrl()" alt="" (load)="onMediaReady()" (error)="onMediaError()" />
+    }
+    @case ('f3d') {
+      <img class="is-native" [src]="previewUrl()" alt="Eingebettete Fusion-360-Vorschau" (load)="onMediaReady()" (error)="onMediaError()" />
+      <p class="f3d-note">F3D speichert Geometrie nur im proprietären Fusion-Format – gezeigt wird die eingebettete Vorschau.</p>
+    }
+    @case ('pdf') {
+      <div class="pdf" (wheel)="onPdfWheel($event)">
+        <div class="tools" role="toolbar" aria-label="PDF-Steuerung">
+          <button type="button" class="icon-btn" aria-label="Vorherige Seite" [disabled]="pdfPage() <= 1" (click)="pdfPrev()">
+            <app-icon name="chevron-left" />
+          </button>
+          <span class="tool-label">Seite {{ pdfPage() }} / {{ pdfPageCount() || '…' }}</span>
+          <button
+            type="button"
+            class="icon-btn"
+            aria-label="Nächste Seite"
+            [disabled]="pdfPage() >= pdfPageCount()"
+            (click)="pdfNext()"
+          >
+            <app-icon name="chevron" />
+          </button>
+          <span class="sep" aria-hidden="true"></span>
+          <button type="button" class="icon-btn" aria-label="Verkleinern" [disabled]="pdfZoom() <= 0.5" (click)="pdfZoomBy(0.8)">−</button>
+          <span class="tool-label">{{ pdfZoomPercent() }} %</span>
+          <button type="button" class="icon-btn" aria-label="Vergrößern" [disabled]="pdfZoom() >= 4" (click)="pdfZoomBy(1.25)">+</button>
+        </div>
+        <div class="pdf-scroll" #pdfScroll>
+          <canvas #pdfCanvas></canvas>
+        </div>
+      </div>
+    }
+    @case ('stl') {
+      <ng-container [ngTemplateOutlet]="model" />
+    }
+    @case ('3mf') {
+      <ng-container [ngTemplateOutlet]="model" />
+    }
+    @default {
+      <p class="state">Für diesen Dateityp gibt es keine Vorschau.</p>
+    }
+  }
+
+  <ng-template #model>
+    <div class="model">
+      <div #viewport class="viewport" aria-label="3D-Ansicht: Ziehen zum Drehen, Scrollen zum Zoomen" role="img"></div>
+      <div class="tools model-tools" role="toolbar" aria-label="3D-Steuerung">
+        <button type="button" class="icon-btn" title="Ansicht zurücksetzen" aria-label="Ansicht zurücksetzen" (click)="resetView()">
+          <app-icon name="refresh" />
+        </button>
+        <button
+          type="button"
+          class="icon-btn"
+          title="Drahtgitter"
+          aria-label="Drahtgitter"
+          [class.is-active]="wireframe()"
+          [attr.aria-pressed]="wireframe()"
+          (click)="toggleWireframe()"
+        >
+          <app-icon name="wireframe" />
+        </button>
+        @if (stats(); as s) {
+          <span class="tool-label">{{ dimensions() }}</span>
+          <span class="tool-label">{{ triangles() }} Dreiecke</span>
+          @if (s.simplified) {
+            <span class="tool-label is-note" title="Große Netze werden für eine flüssige Anzeige vereinfacht.">
+              vereinfacht auf {{ shownTriangles() }}
+            </span>
+          }
+        }
+      </div>
+    </div>
+  </ng-template>
+
+  @if (status() === 'loading' && kind() !== 'mp4') {
+    <div class="loading" role="status">
+      @if (progress(); as p) {
+        <span class="loading-label">
+          @if (p.phase === 'parse') {
+            Wird aufbereitet …
+          } @else if (progressPercent() !== null) {
+            Lädt … {{ progressPercent() }} %
+          } @else {
+            Lädt …
+          }
+        </span>
+        <span class="loading-track" aria-hidden="true">
+          <span
+            class="loading-fill"
+            [class.is-indeterminate]="p.phase === 'parse' || progressPercent() === null"
+            [style.width.%]="p.phase === 'parse' ? 100 : (progressPercent() ?? 100)"
+          ></span>
+        </span>
+      } @else {
+        <span class="loading-label">Lädt …</span>
+      }
+    </div>
+  }
+  @if (contextLost() && (kind() === 'stl' || kind() === '3mf')) {
+    <div class="state is-error" role="alert">
+      <p>Die 3D-Ansicht wurde vom System zurückgesetzt (WebGL-Kontext verloren).</p>
+      <button type="button" class="btn btn-ghost btn-tiny" (click)="retryWebGl()">Erneut versuchen</button>
+    </div>
+  } @else if (status() === 'error') {
+    <p class="state is-error" role="alert">Vorschau konnte nicht geladen werden.</p>
+  }
+</div>

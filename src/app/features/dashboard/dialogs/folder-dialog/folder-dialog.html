@@ -1,0 +1,22 @@
+<div class="dialog-backdrop" (click)="closed.emit()">
+  <form class="dialog" appDialog aria-labelledby="folder-title" (dismiss)="closed.emit()" (submit)="$event.preventDefault(); submit()">
+    <h2 id="folder-title">Neuer Ordner</h2>
+    <p>Wird in „{{ locationLabel() }}“ erstellt.</p>
+    <label class="field">
+      <span>Ordnername</span>
+      <input
+        type="text"
+        name="name"
+        autofocus
+        autocomplete="off"
+        placeholder="z. B. Kalibrierung"
+        [value]="name()"
+        (input)="name.set($any($event.target).value)"
+      />
+    </label>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" (click)="closed.emit()" [disabled]="busy()">Abbrechen</button>
+      <button type="submit" class="btn btn-primary" [disabled]="busy() || !name().trim()">Anlegen</button>
+    </div>
+  </form>
+</div>

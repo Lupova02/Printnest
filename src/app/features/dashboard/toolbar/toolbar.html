@@ -1,0 +1,166 @@
+<header class="toolbar">
+  <div class="nav">
+    <button
+      type="button"
+      class="icon-btn"
+      title="Eine Ebene höher (⌘↑)"
+      aria-label="Eine Ebene höher"
+      [disabled]="store.isFolderView() && !store.currentFolder()"
+      (click)="store.goUp()"
+    >
+      <app-icon name="chevron-left" />
+    </button>
+
+    @if (store.isFolderView()) {
+      <nav class="crumbs" aria-label="Pfad">
+        <ol>
+          @for (crumb of store.breadcrumbs(); track crumb.relativePath; let last = $last; let first = $first) {
+            <li>
+              @if (!last) {
+                <button
+                  type="button"
+                  class="crumb"
+                  (click)="store.openFolder(crumb.relativePath)"
+                  (dragover)="onDragOver($event)"
+                  (drop)="onDrop(crumb.relativePath, $event)"
+                >
+                  {{ first ? 'Bibliothek' : crumb.name }}
+                </button>
+                <app-icon name="chevron" class="crumb-sep" />
+              } @else {
+                <h1 class="crumb is-current" aria-current="page">{{ first ? 'Bibliothek' : crumb.name }}</h1>
+              }
+            </li>
+          }
+        </ol>
+      </nav>
+    } @else {
+      <h1 class="title">{{ store.title() }}</h1>
+    }
+    @if (!store.loading()) {
+      <span class="count" aria-live="polite">{{ store.visibleEntries().length }} Einträge</span>
+    }
+  </div>
+
+  <div class="controls">
+    <label class="search">
+      <app-icon name="search" class="search-icon" />
+      <span class="sr-only">Bibliothek durchsuchen</span>
+      <input
+        #searchInput
+        type="search"
+        placeholder="Suchen"
+        [value]="store.search()"
+        (input)="store.setSearch($any($event.target).value)"
+        (keydown)="onSearchKeydown($event)"
+      />
+    </label>
+
+    <label class="select" title="Mindestbewertung">
+      <span class="sr-only">Mindestbewertung</span>
+      <select [value]="store.minRating()" (change)="store.setMinRating(+$any($event.target).value)">
+        @for (n of ratingOptions; track n) {
+          <option [value]="n" [selected]="store.minRating() === n">{{ n === 0 ? 'Alle ★' : '≥ ' + n + ' ★' }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="select" title="Sortierung">
+      <span class="sr-only">Sortieren nach</span>
+      <select [value]="store.sort()" (change)="onSort($any($event.target).value)">
+        @for (option of sortOptions; track option.id) {
+          <option [value]="option.id" [selected]="store.sort() === option.id">{{ option.label }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="segmented" role="group" aria-label="Darstellung">
+      <button
+        type="button"
+        class="icon-btn"
+        title="Als Liste (⌘1)"
+        aria-label="Als Liste"
+        [class.is-active]="store.layout() === 'list'"
+        [attr.aria-pressed]="store.layout() === 'list'"
+        (click)="store.setLayout('list')"
+      >
+        <app-icon name="list" />
+      </button>
+      <button
+        type="button"
+        class="icon-btn"
+        title="Als Raster (⌘2)"
+        aria-label="Als Raster"
+        [class.is-active]="store.layout() === 'grid'"
+        [attr.aria-pressed]="store.layout() === 'grid'"
+        (click)="store.setLayout('grid')"
+      >
+        <app-icon name="grid" />
+      </button>
+    </div>
+
+    <span class="divider" aria-hidden="true"></span>
+
+    <button
+      type="button"
+      class="icon-btn"
+      [title]="slicerTitle()"
+      [attr.aria-label]="slicerTitle()"
+      [disabled]="!slicerEnabled()"
+      (click)="action.emit('open-slicer')"
+    >
+      <app-icon name="cube" />
+    </button>
+    <button
+      type="button"
+      class="icon-btn"
+      title="Widerrufen (⌘Z)"
+      aria-label="Letztes Umbenennen/Verschieben widerrufen"
+      [disabled]="!store.canUndo()"
+      (click)="action.emit('undo')"
+    >
+      <app-icon name="undo" />
+    </button>
+
+    <button
+      type="button"
+      class="icon-btn"
+      title="Neuer Ordner (⇧⌘N)"
+      aria-label="Neuer Ordner"
+      [disabled]="store.busy() || !store.isFolderView()"
+      (click)="action.emit('new-folder')"
+    >
+      <app-icon name="folder-plus" />
+    </button>
+    <button
+      type="button"
+      class="icon-btn"
+      title="Dateien importieren (⌘O)"
+      aria-label="Dateien importieren"
+      [disabled]="store.busy() || !store.isFolderView()"
+      (click)="action.emit('import')"
+    >
+      <app-icon name="import" />
+    </button>
+    <button
+      type="button"
+      class="icon-btn"
+      title="Link hinzufügen (⌘L)"
+      aria-label="Link hinzufügen"
+      [disabled]="store.busy() || !store.isFolderView()"
+      (click)="action.emit('new-link')"
+    >
+      <app-icon name="link" />
+    </button>
+    <button
+      type="button"
+      class="icon-btn"
+      title="Namens-Assistent (⇧⌘A)"
+      aria-label="Namens-Assistent"
+      [disabled]="store.busy() || !store.isFolderView()"
+      (click)="action.emit('name-assist')"
+    >
+      <app-icon name="wand" />
+    </button>
+  </div>
+</header>

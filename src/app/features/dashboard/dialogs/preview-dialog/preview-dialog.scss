@@ -1,0 +1,111 @@
+:host {
+  display: contents;
+}
+
+.preview-dialog {
+  width: min(100%, 1180px);
+  height: min(92dvh, 820px);
+  max-height: none;
+  padding: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nav {
+  display: flex;
+  gap: 2px;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+}
+
+.title h2 {
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.title p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  min-height: 0;
+}
+
+.stage {
+  padding: 12px;
+  min-height: 0;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 14px 16px;
+  border-left: 1px solid var(--line);
+  overflow-y: auto;
+}
+
+h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.hint,
+.counter {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.date-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.actions {
+  margin-top: auto;
+  display: grid;
+  gap: 8px;
+}
+
+@media (max-width: 860px) {
+  .body {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .side {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    max-height: 40%;
+  }
+}
+
+/* Weicher Übergang beim Blättern (View Transition, ≤ 150 ms). */
+.stage {
+  view-transition-name: preview-stage;
+}
+
+.video-keys {
+  line-height: 1.9;
+}

@@ -1,0 +1,188 @@
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
+
+.preview {
+  position: relative;
+  height: 100%;
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  background:
+    radial-gradient(80% 70% at 50% 35%, var(--accent-soft), transparent 70%),
+    var(--bg-sunken);
+  overflow: hidden;
+}
+
+img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* F3D: natürliche Größe, nie hochskaliert (bleibt scharf). */
+img.is-native {
+  width: auto;
+  height: auto;
+}
+
+.f3d-note {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.model,
+.pdf {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.pdf {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.viewport {
+  min-height: 0;
+  cursor: grab;
+}
+
+.viewport:active {
+  cursor: grabbing;
+}
+
+.viewport ::ng-deep canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--bg-elevated) 85%, transparent);
+  border-top: 1px solid var(--line);
+}
+
+.pdf .tools {
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+  justify-content: center;
+}
+
+.tool-label {
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  padding: 0 4px;
+}
+
+.sep {
+  width: 1px;
+  height: 18px;
+  background: var(--line-strong);
+}
+
+.pdf-scroll {
+  overflow: auto;
+  padding: 12px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+}
+
+.pdf-scroll canvas {
+  box-shadow: var(--shadow-card);
+  background: #fff;
+}
+
+.loading {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  min-width: 220px;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+  box-shadow: var(--shadow-card);
+}
+
+.loading-label {
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.loading-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line-strong);
+  overflow: hidden;
+}
+
+.loading-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width var(--dur-fast) linear;
+}
+
+.loading-fill.is-indeterminate {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  background-size: 50% 100%;
+  background-repeat: no-repeat;
+  animation: loading-slide 1.1s ease-in-out infinite;
+}
+
+@keyframes loading-slide {
+  from {
+    background-position: -50% 0;
+  }
+  to {
+    background-position: 150% 0;
+  }
+}
+
+.tool-label.is-note {
+  color: var(--accent-text);
+}
+
+.state {
+  color: var(--ink-soft);
+  margin: 0;
+  padding: 1rem;
+}
+
+.state.is-error {
+  position: absolute;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+  color: var(--danger);
+  background: var(--bg-elevated);
+  border-radius: var(--radius);
+}
+
+.state.is-error p {
+  margin: 0;
+}

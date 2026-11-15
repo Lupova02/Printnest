@@ -1,0 +1,86 @@
+<div class="player" #root>
+  <video
+    #video
+    [src]="src()"
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto"
+    (click)="togglePlay()"
+    (dblclick)="toggleFullscreen()"
+    (loadedmetadata)="onMeta()"
+    (durationchange)="onMeta()"
+    (timeupdate)="onTime()"
+    (play)="playing.set(true)"
+    (pause)="playing.set(false)"
+    (volumechange)="onVolume()"
+    (loadeddata)="ready.emit()"
+    (error)="failed.emit()"
+  ></video>
+
+  <div class="bar" role="group" aria-label="Videosteuerung">
+    <button
+      type="button"
+      class="icon-btn"
+      [attr.aria-label]="playing() ? 'Pause (K)' : 'Abspielen (K)'"
+      [title]="playing() ? 'Pause (K)' : 'Abspielen (K)'"
+      (click)="togglePlay()"
+    >
+      <app-icon [name]="playing() ? 'pause' : 'play'" />
+    </button>
+    <span class="time">{{ formatTime(current()) }}</span>
+
+    <div class="scrub" (pointermove)="onScrubHover($event)" (pointerleave)="hover.set(null)">
+      <div class="track" aria-hidden="true"><span class="fill" [style.width.%]="progress()"></span></div>
+      <input
+        type="range"
+        min="0"
+        step="0.05"
+        aria-label="Position"
+        [max]="duration() || 0"
+        [value]="current()"
+        [attr.aria-valuetext]="formatTime(current()) + ' von ' + formatTime(duration())"
+        (input)="seekTo(+$any($event.target).value)"
+      />
+      @if (hover(); as h) {
+        <span class="tip" [style.left.px]="h.x">{{ formatTime(h.time) }}</span>
+      }
+    </div>
+
+    <span class="time">{{ formatTime(duration()) }}</span>
+
+    <button
+      type="button"
+      class="icon-btn"
+      [attr.aria-label]="muted() ? 'Ton an (M)' : 'Stumm (M)'"
+      [title]="muted() ? 'Ton an (M)' : 'Stumm (M)'"
+      (click)="toggleMute()"
+    >
+      <app-icon [name]="muted() || volume() === 0 ? 'volume-off' : 'volume'" />
+    </button>
+    <input
+      class="volume"
+      type="range"
+      min="0"
+      max="1"
+      step="0.05"
+      aria-label="Lautstärke"
+      [value]="muted() ? 0 : volume()"
+      (input)="setVolume(+$any($event.target).value)"
+    />
+
+    <label class="speed" title="Geschwindigkeit">
+      <span class="sr-only">Geschwindigkeit</span>
+      <select [value]="rate()" (change)="setRate(+$any($event.target).value)">
+        @for (s of speeds; track s) {
+          <option [value]="s" [selected]="rate() === s">{{ s.toString().replace('.', ',') }}×</option>
+        }
+      </select>
+    </label>
+
+    <button type="button" class="icon-btn" aria-label="Vollbild (F)" title="Vollbild (F)" (click)="toggleFullscreen()">
+      <app-icon name="fullscreen" />
+    </button>
+  </div>
+</div>

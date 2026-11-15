@@ -1,0 +1,170 @@
+@use './app/shared/styles/ui';
+@use './app/shared/styles/themes';
+
+/*
+ * Design-Tokens (Light/Dark nach System). Theme-abhängige Farben (Flächen, Text, Linien, Akzent,
+ * Auswahl, Fokusring) kommen aus _themes.scss (generiert, je Dateityp, WCAG AA geprüft);
+ * hier stehen nur themenunabhängige Tokens. Home/Ordner: Eisblau #8fd4e8 auf Deep Navy.
+ */
+:root {
+  color-scheme: light dark;
+
+  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --bg-backdrop: rgba(14, 22, 30, 0.38);
+
+  --star: #b87400;
+  --star-empty: rgba(16, 23, 29, 0.28);
+  --danger: #c0392b;
+  --danger-ink: #ffffff;
+  --success: #1e7d4f;
+
+  --stl: #1c88b0;
+  --threemf: #1e8f4e;
+  --f3d: #c45a12;
+  --pdf: #d03a2f;
+  --mp4: #7c4ddb;
+  --img: #c9367f;
+  --link: #b07400;
+  --folder: #3c8fb5;
+
+  --radius-s: 6px;
+  --radius: 10px;
+  --radius-l: 14px;
+  --shadow-card: 0 1px 2px rgba(16, 23, 29, 0.06), 0 2px 8px rgba(16, 23, 29, 0.05);
+  --shadow-lift: 0 6px 18px rgba(16, 23, 29, 0.12), 0 2px 6px rgba(16, 23, 29, 0.08);
+  --shadow-dialog: 0 24px 64px rgba(10, 16, 22, 0.28), 0 4px 16px rgba(10, 16, 22, 0.14);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 150ms;
+  --dur: 220ms;
+  --dur-slow: 300ms;
+
+  /* Stufen-Aliase bg-0 (tiefste) … bg-3 (erhabenste Fläche). */
+  --bg-0: var(--bg-sunken);
+  --bg-1: var(--bg-window);
+  --bg-2: var(--bg-sidebar);
+  --bg-3: var(--bg-elevated);
+  --dur-theme: 250ms;
+
+  --sidebar-width: 236px;
+  --toolbar-height: 52px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-backdrop: rgba(3, 7, 10, 0.62);
+
+    --star: #ffc94d;
+    --star-empty: rgba(220, 238, 246, 0.3);
+    --danger: #e0685a;
+    --danger-ink: #1a0604;
+    --success: #5fd29a;
+
+    --stl: #7ec8e3;
+    --threemf: #3fcf7f;
+    --f3d: #f08a45;
+    --pdf: #ff6a5f;
+    --mp4: #b293ff;
+    --img: #f472b6;
+    --link: #fbbf24;
+    --folder: #8fd4e8;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-lift: 0 10px 24px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+    --shadow-dialog: 0 28px 72px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-theme: 0ms;
+    --dur-fast: 0ms;
+    --dur: 0ms;
+    --dur-slow: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.4;
+  background: var(--bg-window);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* In Electron scheint die Fenster-Vibrancy durch die Seitenleiste. */
+html.is-electron body {
+  background: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--accent-text);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* View Transitions beim Ordnerwechsel */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur);
+  animation-timing-function: var(--ease-out);
+}
+
+/* Quick Look: Crossfade beim Blättern kürzer als ein normaler Seitenwechsel. */
+html.is-preview-step::view-transition-group(*),
+html.is-preview-step::view-transition-old(*),
+html.is-preview-step::view-transition-new(*) {
+  animation-duration: 140ms;
+}
+
+/* Theme-Wechsel: Farben ~250 ms überblenden (nur während des Wechsels aktiv). */
+html.is-theme-changing,
+html.is-theme-changing *,
+html.is-theme-changing *::before,
+html.is-theme-changing *::after {
+  transition:
+    background-color var(--dur-theme) ease,
+    border-color var(--dur-theme) ease,
+    color var(--dur-theme) ease,
+    fill var(--dur-theme) ease,
+    box-shadow var(--dur-theme) ease !important;
+}

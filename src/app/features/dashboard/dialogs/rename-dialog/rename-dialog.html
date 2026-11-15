@@ -1,0 +1,22 @@
+<div class="dialog-backdrop" (click)="closed.emit()">
+  <form class="dialog" appDialog aria-labelledby="rename-title" (dismiss)="closed.emit()" (submit)="$event.preventDefault(); submit()">
+    <h2 id="rename-title">Umbenennen</h2>
+    <p>{{ kindLabel(entry()) }}: {{ entry().name }}</p>
+    <label class="field">
+      <span>Neuer Name</span>
+      <input
+        type="text"
+        name="name"
+        autofocus
+        autocomplete="off"
+        [value]="name()"
+        (input)="name.set($any($event.target).value)"
+      />
+    </label>
+    <p class="field-hint">Nicht erlaubt: „/“, „\“ und „:“.</p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" (click)="closed.emit()" [disabled]="busy()">Abbrechen</button>
+      <button type="submit" class="btn btn-primary" [disabled]="busy() || !name().trim()">Umbenennen</button>
+    </div>
+  </form>
+</div>

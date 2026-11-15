@@ -1,0 +1,19 @@
+<div class="dialog-backdrop" (click)="closed.emit()">
+  <div class="dialog" appDialog aria-labelledby="delete-title" aria-describedby="delete-text" (dismiss)="closed.emit()">
+    <h2 id="delete-title">{{ isLink() ? 'Link entfernen?' : 'In den Papierkorb legen?' }}</h2>
+    <p id="delete-text">
+      @if (isLink()) {
+        Der Link „{{ entry().name }}“ wird aus der Bibliothek entfernt.
+      } @else {
+        „{{ entry().name }}“{{ entry().type === 'folder' ? ' wird samt Inhalt' : ' wird' }} in den Papierkorb
+        verschoben. Du kannst es im Finder wiederherstellen.
+      }
+    </p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" (click)="closed.emit()" [disabled]="busy()">Abbrechen</button>
+      <button type="button" class="btn btn-danger" autofocus (click)="confirmed.emit()" [disabled]="busy()">
+        {{ isLink() ? 'Entfernen' : 'In den Papierkorb' }}
+      </button>
+    </div>
+  </div>
+</div>

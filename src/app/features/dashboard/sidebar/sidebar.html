@@ -1,0 +1,102 @@
+<nav class="sidebar" aria-label="Bibliothek">
+  <div class="brand">
+    <img ngSrc="/branding/printnest-icon.svg" width="28" height="28" alt="" priority />
+    <span>Printnest</span>
+  </div>
+
+  @if (store.configured()) {
+    <div class="section">
+      <button
+        type="button"
+        class="nav-item"
+        [class.is-active]="homeActive()"
+        [class.is-drop]="dropTarget() === ''"
+        [attr.aria-current]="homeActive() ? 'page' : null"
+        (click)="store.openFolder('')"
+        (dragover)="onDragOver('', $event)"
+        (dragleave)="dropTarget.set(null)"
+        (drop)="onDrop('', $event)"
+      >
+        <app-icon name="library" class="nav-icon" />
+        <span class="nav-label">Bibliothek</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item"
+        [class.is-active]="activeKey() === 'rated'"
+        [attr.aria-current]="activeKey() === 'rated' ? 'page' : null"
+        (click)="store.showRated()"
+      >
+        <app-icon name="star" class="nav-icon is-star" />
+        <span class="nav-label">Gut bewertet</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item"
+        [class.is-active]="activeKey() === 'recent'"
+        [attr.aria-current]="activeKey() === 'recent' ? 'page' : null"
+        (click)="store.showRecent()"
+      >
+        <app-icon name="clock" class="nav-icon" />
+        <span class="nav-label">Zuletzt geändert</span>
+      </button>
+    </div>
+
+    @if (store.topFolders().length) {
+      <div class="section">
+        <h2 class="section-title" id="sb-folders">Ordner</h2>
+        <ul class="nav-list" aria-labelledby="sb-folders">
+          @for (folder of store.topFolders(); track folder.id) {
+            <li>
+              <button
+                type="button"
+                class="nav-item"
+                [class.is-active]="isFolderActive(folder) && !homeActive()"
+                [class.is-drop]="dropTarget() === folder.relativePath"
+                [attr.aria-current]="isFolderActive(folder) ? 'page' : null"
+                [title]="folder.name"
+                (click)="store.openFolder(folder.relativePath)"
+                (dragover)="onDragOver(folder.relativePath, $event)"
+                (dragleave)="dropTarget.set(null)"
+                (drop)="onDrop(folder.relativePath, $event)"
+              >
+                <app-icon name="folder" class="nav-icon is-folder" />
+                <span class="nav-label">{{ folder.name }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <div class="section">
+      <h2 class="section-title" id="sb-kinds">Dateitypen</h2>
+      <ul class="nav-list" aria-labelledby="sb-kinds">
+        @for (kind of kinds; track kind.id) {
+          <li>
+            <button
+              type="button"
+              class="nav-item"
+              [class.is-active]="activeKey() === 'kind:' + kind.id"
+              [attr.aria-current]="activeKey() === 'kind:' + kind.id ? 'page' : null"
+              (click)="store.showKind(kind.id)"
+            >
+              <span class="kind-dot" [attr.data-kind]="kind.id" aria-hidden="true"></span>
+              <span class="nav-label">{{ kind.label }}</span>
+              @if (count(kind.id) !== null) {
+                <span class="nav-count" [attr.aria-label]="count(kind.id) + ' Dateien'">{{ count(kind.id) }}</span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+
+  <div class="sidebar-foot">
+    <button type="button" class="nav-item" (click)="openSettings.emit()">
+      <app-icon name="settings" class="nav-icon" />
+      <span class="nav-label">Einstellungen</span>
+    </button>
+  </div>
+</nav>

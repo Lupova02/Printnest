@@ -1,0 +1,111 @@
+<div class="dialog-backdrop" (click)="closed.emit()">
+  <form class="dialog link-dialog" appDialog aria-labelledby="link-title" (dismiss)="closed.emit()" (submit)="$event.preventDefault(); submit()">
+    <h2 id="link-title">{{ isEdit() ? 'Link bearbeiten' : 'Link hinzufügen' }}</h2>
+    <p>
+      @if (isEdit()) {
+        Name und Adresse ändern; die Erreichbarkeit lässt sich manuell prüfen.
+      } @else {
+        URL einfügen genügt – Titel, Bild und Ersteller werden automatisch ergänzt. Gespeichert in „{{ locationLabel() }}“.
+      }
+    </p>
+
+    <label class="field">
+      <span>URL</span>
+      <div class="url-row">
+        <input
+          type="url"
+          name="url"
+          autofocus
+          autocomplete="off"
+          placeholder="https://makerworld.com/…"
+          [value]="url()"
+          [attr.aria-invalid]="url().length > 8 && !urlValid()"
+          (input)="onUrlInput($any($event.target).value)"
+        />
+        <button type="button" class="btn btn-ghost" (click)="pasteFromClipboard()">Einfügen</button>
+      </div>
+    </label>
+    @if (clipboardError()) {
+      <p class="field-hint" role="status">{{ clipboardError() }}</p>
+    }
+
+    @if (loading()) {
+      <div class="card is-loading" role="status"><span class="skeleton sk-img"></span><span class="sk-text">Hole Titel und Vorschaubild …</span></div>
+    } @else if (preview(); as p) {
+      <div class="card">
+        @if (p.image && !imageFailed()) {
+          <img [src]="p.image" alt="" referrerpolicy="no-referrer" (error)="imageFailed.set(true)" />
+        } @else {
+          <span class="card-icon"><app-icon name="link" /></span>
+        }
+        <div class="card-body">
+          @if (p.portalLabel) {
+            <span class="portal" [attr.data-portal]="p.portal">{{ p.portalLabel }}</span>
+          }
+          <strong>{{ p.title || 'Ohne Titel' }}</strong>
+          @if (p.creator) {
+            <span class="meta">von {{ p.creator }}</span>
+          }
+          @if (p.description) {
+            <span class="desc">{{ p.description }}</span>
+          }
+          @if (p.error) {
+            <span class="meta is-warn">{{ p.error }}</span>
+          }
+        </div>
+      </div>
+    }
+
+    @if (duplicates().length) {
+      <div class="notice" role="alert">
+        <app-icon name="warning" />
+        <div>
+          Bereits gespeichert:
+          @for (d of duplicates(); track d.id) {
+            <strong>„{{ d.name }}“</strong> in {{ folderLabel(d.parentPath) }}@if (!$last) {, }
+          }
+          <label class="check">
+            <input type="checkbox" [checked]="allowDuplicate()" (change)="allowDuplicate.set($any($event.target).checked)" />
+            Trotzdem speichern
+          </label>
+        </div>
+      </div>
+    }
+
+    <label class="field field-spaced">
+      <span>Name</span>
+      <input
+        type="text"
+        name="name"
+        autocomplete="off"
+        placeholder="z. B. Benchy (MakerWorld)"
+        [value]="name()"
+        (input)="onNameInput($any($event.target).value)"
+      />
+    </label>
+
+    @if (related().length) {
+      <p class="related">
+        <app-icon name="link" /> Gehört zu
+        @for (r of related(); track r.id) {
+          <strong>{{ r.name }}</strong>@if (!$last) {, }
+        }
+      </p>
+    }
+
+    <div class="dialog-actions">
+      @if (editEntry(); as edit) {
+        <button type="button" class="btn btn-ghost status-btn" (click)="checkStatus.emit(edit)">
+          Erreichbarkeit prüfen
+          @if (edit.linkMeta?.status; as status) {
+            <span class="status" [attr.data-status]="status">
+              {{ status === 'ok' ? 'erreichbar' : status === 'not-found' ? '404' : status === 'blocked' ? 'privat' : 'Fehler' }}
+            </span>
+          }
+        </button>
+      }
+      <button type="button" class="btn btn-ghost" (click)="closed.emit()" [disabled]="busy()">Abbrechen</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!canSave()">Speichern</button>
+    </div>
+  </form>
+</div>

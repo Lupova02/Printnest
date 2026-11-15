@@ -1,0 +1,108 @@
+{
+  "name": "printnest",
+  "version": "0.3.0",
+  "description": "Lokale Bibliothek für 3D-Druck-Dateien",
+  "author": "Lupova02",
+  "license": "MIT",
+  "private": true,
+  "main": "electron/main.mjs",
+  "packageManager": "npm@11.16.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "concurrently -k -n api,web -c teal,magenta \"npm run start:api\" \"npm run start:web\"",
+    "start:api": "NODE_ENV=development node server/index.mjs",
+    "start:web": "ng serve --host 127.0.0.1 --port 4200 --proxy-config proxy.conf.json",
+    "build": "ng build",
+    "build:web": "ng build --configuration=production",
+    "watch": "ng build --watch --configuration development",
+    "test": "npm run test:web && npm run test:server",
+    "test:web": "ng test --watch=false",
+    "test:server": "vitest run -c vitest.server.config.mjs",
+    "icon": "node scripts/build-app-icon.mjs",
+    "themes": "node scripts/build-themes.mjs",
+    "electron:prepare": "node scripts/prepare-electron-bootstrap.mjs && node scripts/build-app-icon.mjs",
+    "electron:dev": "npm run build:web && npm run electron:prepare && env -u ELECTRON_RUN_AS_NODE electron .",
+    "electron:pack": "npm run build:web && npm run electron:prepare && env -u ELECTRON_RUN_AS_NODE electron-builder --mac --dir",
+    "electron:dist": "npm run build:web && npm run electron:prepare && env -u ELECTRON_RUN_AS_NODE electron-builder --mac",
+    "test:ui": "env -u ELECTRON_RUN_AS_NODE electron scripts/ui-smoke.mjs"
+  },
+  "build": {
+    "appId": "app.printnest.desktop",
+    "productName": "Printnest",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "icon": "build/icon.png",
+    "files": [
+      "dist/printnest/browser/**/*",
+      "server/**/*",
+      "!server/test/**",
+      "!server/config.json",
+      "!server/.preview-cache/**",
+      "electron/**/*",
+      "!electron/bootstrap-config.json",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "electron/seed-links.json",
+        "to": "seed-links.json"
+      },
+      {
+        "from": "electron/bootstrap-config.json",
+        "to": "bootstrap-config.json"
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/@napi-rs/**/*",
+      "**/node_modules/pdfjs-dist/**/*"
+    ],
+    "mac": {
+      "icon": "build/icon.icns",
+      "category": "public.app-category.utilities",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "identity": "-",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    }
+  },
+  "dependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/compiler": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@angular/forms": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
+    "@angular/router": "^22.0.0",
+    "@napi-rs/canvas": "^1.0.3",
+    "express": "^5.2.1",
+    "fflate": "^0.8.3",
+    "fzstd": "^0.1.1",
+    "multer": "^2.2.0",
+    "pdfjs-dist": "^6.2.108",
+    "rxjs": "~7.8.0",
+    "three": "^0.185.1",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.0.8",
+    "@angular/cli": "^22.0.8",
+    "@angular/compiler-cli": "^22.0.0",
+    "@types/three": "^0.185.1",
+    "concurrently": "^10.0.4",
+    "electron": "^45.3.2",
+    "electron-builder": "^26.18.0",
+    "jsdom": "^28.0.0",
+    "prettier": "^3.8.1",
+    "typescript": "~6.0.2",
+    "vitest": "^4.0.8"
+  }
+}

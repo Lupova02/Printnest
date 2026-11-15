@@ -1,0 +1,29 @@
+@switch (mode()) {
+  @case ('folder') {
+    <app-icon name="folder" class="glyph is-folder" />
+  }
+  @case ('link') {
+    <app-icon name="link" class="glyph is-link" />
+  }
+  @case ('video') {
+    @if (src() && !failed()) {
+      <video [src]="src()" muted preload="metadata" playsinline (loadeddata)="onLoad()" (error)="onError()"></video>
+    } @else {
+      <span class="badge">MP4</span>
+    }
+  }
+  @default {
+    @if (src() && !failed()) {
+      <img [src]="src()" alt="" decoding="async" (load)="onLoad()" (error)="onError()" />
+    }
+    @if (!loaded() || failed()) {
+      @if ((mode() === 'model' || mode() === 'image') && !failed()) {
+        <span class="skeleton shimmer" aria-hidden="true"></span>
+      } @else if (kindAttr() === 'link') {
+        <app-icon name="link" class="glyph is-link" />
+      } @else {
+        <span class="badge">{{ extLabel() }}</span>
+      }
+    }
+  }
+}

@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Printnest App-Icon: Druckdüse (Hotend) mit Filament, Nahaufnahme von schräg oben.
+    macOS-Squircle nach Apple HIG: 824 px Inhalt auf 1024 px, Radius ≈ 22,37 %.
+    Bewusst wenige, kontraststarke Formen: Messingdüse + leuchtender Strang bleiben bei 16–32 px lesbar.
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#1b2c3d"/>
+      <stop offset="0.5" stop-color="#0e1824"/>
+      <stop offset="1" stop-color="#060a10"/>
+    </linearGradient>
+    <radialGradient id="ambient" cx="0.55" cy="0.62" r="0.6">
+      <stop offset="0" stop-color="#8fd4e8" stop-opacity="0.22"/>
+      <stop offset="0.6" stop-color="#5eb8d4" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#5eb8d4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bed" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d3349"/>
+      <stop offset="1" stop-color="#0b1520"/>
+    </linearGradient>
+    <linearGradient id="block" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5d6b7a"/>
+      <stop offset="0.35" stop-color="#c3ccd5"/>
+      <stop offset="0.55" stop-color="#8794a2"/>
+      <stop offset="1" stop-color="#3a4552"/>
+    </linearGradient>
+    <linearGradient id="blockTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e3e9ef"/>
+      <stop offset="1" stop-color="#a9b4bf"/>
+    </linearGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8a5a1c"/>
+      <stop offset="0.28" stop-color="#ffd98a"/>
+      <stop offset="0.5" stop-color="#e2a948"/>
+      <stop offset="1" stop-color="#6e4512"/>
+    </linearGradient>
+    <linearGradient id="brassNut" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a26c24"/>
+      <stop offset="0.3" stop-color="#ffe2a0"/>
+      <stop offset="0.52" stop-color="#d89a3c"/>
+      <stop offset="1" stop-color="#7a4d14"/>
+    </linearGradient>
+    <radialGradient id="tipGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#d8f3fb" stop-opacity="0.95"/>
+      <stop offset="0.35" stop-color="#8fd4e8" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#8fd4e8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-60%" width="140%" height="220%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <filter id="iconShadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+    <filter id="partShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="16" stdDeviation="14" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+    <clipPath id="squircle">
+      <rect x="100" y="100" width="824" height="824" rx="184" ry="184"/>
+    </clipPath>
+  </defs>
+
+  <!-- Grundform -->
+  <rect x="100" y="100" width="824" height="824" rx="184" ry="184" fill="url(#bg)" filter="url(#iconShadow)"/>
+
+  <g clip-path="url(#squircle)">
+    <!-- Druckbett in Perspektive -->
+    <path d="M100 640 L924 586 L924 924 L100 924 Z" fill="url(#bed)"/>
+    <path d="M100 640 L924 586" stroke="#8fd4e8" stroke-opacity="0.28" stroke-width="4"/>
+    <rect x="100" y="100" width="824" height="824" fill="url(#ambient)"/>
+
+    <!-- Bereits gedruckte Bahnen der ersten Schicht (gedämpft) -->
+    <g stroke-linecap="round" fill="none">
+      <path d="M230 790 L860 748" stroke="#3f8fae" stroke-width="30" stroke-opacity="0.75"/>
+      <path d="M200 860 L880 815" stroke="#2f7591" stroke-width="30" stroke-opacity="0.6"/>
+    </g>
+
+    <!-- Aktueller Strang: Glow + Kern -->
+    <path d="M560 600 L560 660 Q560 700 520 703 L214 724" stroke="#8fd4e8" stroke-width="78" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.55" filter="url(#glow)"/>
+    <path d="M560 600 L560 660 Q560 700 520 703 L214 724" stroke="#8fd4e8" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M552 612 L552 660 Q552 690 518 694 L236 713" stroke="#e4f7fc" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.85"/>
+
+    <!-- Hotend -->
+    <g filter="url(#partShadow)">
+      <!-- Heizblock (Aluminium), schräg von oben: Deckfläche + Front -->
+      <path d="M352 196 L700 172 L760 214 L412 240 Z" fill="url(#blockTop)"/>
+      <path d="M412 240 L760 214 L760 384 L412 412 Z" fill="url(#block)"/>
+      <path d="M352 196 L412 240 L412 412 L352 366 Z" fill="#2c3642"/>
+      <circle cx="476" cy="326" r="26" fill="#1c242e"/>
+      <circle cx="476" cy="326" r="12" fill="#3b4755"/>
+      <!-- Sechskant der Düse -->
+      <path d="M470 404 L650 392 L650 452 L470 464 Z" fill="url(#brassNut)"/>
+      <path d="M470 404 L650 392" stroke="#fff1c9" stroke-width="5" stroke-linecap="round"/>
+      <!-- Düsenkegel -->
+      <path d="M484 462 L636 452 L574 592 L548 594 Z" fill="url(#brass)"/>
+      <!-- Lichtkante -->
+      <path d="M496 466 L556 590" stroke="#fff6dc" stroke-width="7" stroke-linecap="round" opacity="0.9"/>
+    </g>
+
+    <!-- Austritt an der Düsenspitze -->
+    <circle cx="561" cy="604" r="54" fill="url(#tipGlow)"/>
+  </g>
+</svg>

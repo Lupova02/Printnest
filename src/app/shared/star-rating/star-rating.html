@@ -1,0 +1,27 @@
+<div
+  class="stars"
+  role="group"
+  [attr.aria-label]="label() + ': ' + (value() ? value() + ' von 5 Sternen' : 'nicht bewertet')"
+  (mouseleave)="hover.set(0)"
+>
+  @for (n of stars; track n) {
+    <button
+      type="button"
+      class="star"
+      [class.is-on]="n <= shown()"
+      [class.is-preview]="hover() > 0"
+      [class.is-pop]="popped() === n"
+      [attr.aria-label]="starLabel(n)"
+      [attr.aria-pressed]="n <= (value() ?? 0)"
+      [attr.tabindex]="compact() ? -1 : 0"
+      [disabled]="readonly()"
+      (mouseenter)="hover.set(n)"
+      (click)="set(n, $event)"
+      (dblclick)="$event.stopPropagation()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+      </svg>
+    </button>
+  }
+</div>

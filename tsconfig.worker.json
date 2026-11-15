@@ -1,0 +1,10 @@
+/* Web Worker (z. B. 3D-Parser) – eigene lib „webworker“ statt DOM. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/worker",
+    "lib": ["ES2022", "webworker"],
+    "types": []
+  },
+  "include": ["src/**/*.worker.ts"]
+}

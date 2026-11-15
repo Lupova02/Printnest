@@ -1,0 +1,194 @@
+<div class="dialog-backdrop" (click)="closed.emit()">
+  <div class="dialog name-assist-dialog" appDialog aria-labelledby="assist-title" (dismiss)="closed.emit()">
+    <div class="name-assist-head">
+      <h2 id="assist-title">Namens-Assistent</h2>
+      <button type="button" class="icon-btn" title="Schließen" aria-label="Schließen" (click)="closed.emit()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12 5.7 16.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.4z"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <div
+      class="drop-zone"
+      [class.is-over]="dragOver()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+    >
+      <p>Dateien hierher ziehen</p>
+      <label class="btn btn-ghost file-pick">
+        Dateien wählen
+        <input
+          type="file"
+          multiple
+          accept=".stl,.3mf,.f3d,.pdf,.mp4,.png,.jpg,.jpeg,.webp,.gif,.bmp"
+          (change)="onFilesPicked($event)"
+        />
+      </label>
+    </div>
+
+    <div class="paste-row">
+      <input
+        type="url"
+        [value]="pasteDraft()"
+        (input)="pasteDraft.set($any($event.target).value)"
+        (keydown.enter)="addFromPaste()"
+        aria-label="Link einfügen"
+        placeholder="https://… Link einfügen"
+      />
+      <button type="button" class="btn btn-ghost" (click)="addFromPaste()" [disabled]="busy() || analyzing()">
+        Link prüfen
+      </button>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-primary sort-schemes-btn"
+      (click)="toggleSortSchemes()"
+      [disabled]="busy() || analyzing()"
+    >
+      @if (showSortSchemes()) {
+        Sortier-Schemata ausblenden
+      } @else {
+        Ähnliche Dateien sauber sortieren
+      }
+    </button>
+
+    @if (error()) {
+      <p class="assist-error">{{ error() }}</p>
+    }
+    @if (analyzing()) {
+      <p class="assist-status">Analysiere…</p>
+    }
+
+    @if (showSortSchemes()) {
+      <section class="sort-schemes" aria-label="Sortier-Schemata">
+        @if (sortContextLabel()) {
+          <p class="sort-context">Für: <strong>{{ sortContextLabel() }}</strong></p>
+        }
+        @if (!sortSchemes().length && !analyzing()) {
+          <p class="assist-status">
+            Zuerst eine Datei oder einen Link einfügen — dann erscheinen passende Schemata.
+          </p>
+        }
+        @for (scheme of sortSchemes(); track scheme.id) {
+          <article class="scheme-card" [class.is-recommended]="scheme.recommended">
+            <header class="scheme-head">
+              <div>
+                <h3>
+                  {{ scheme.title }}
+                  @if (scheme.recommended) {
+                    <span class="scheme-badge">Empfohlen</span>
+                  }
+                </h3>
+                <p>{{ scheme.description }}</p>
+              </div>
+            </header>
+            <ol class="scheme-examples">
+              @for (example of scheme.examples; track example) {
+                <li>
+                  <code>{{ example }}</code>
+                  <button type="button" class="btn btn-ghost btn-tiny" (click)="copyValue(example)">
+                    Kopieren
+                  </button>
+                </li>
+              }
+            </ol>
+            <button type="button" class="btn btn-ghost btn-tiny" (click)="copyScheme(scheme)">
+              Alle kopieren
+            </button>
+          </article>
+        }
+      </section>
+    }
+
+    @if (items().length) {
+      <div class="assist-list">
+        @for (item of items(); track item.id) {
+          <article class="assist-card" [attr.data-kind]="item.fileKind || 'file'">
+            <header class="assist-card-head">
+              <div>
+                <p class="assist-kind">{{ kindDisplayLabel(item.fileKind) }}</p>
+                <h3>{{ item.originalName }}</h3>
+                @if (item.source === 'link') {
+                  <p class="assist-meta">{{ item.displayName }}</p>
+                }
+                @if (item.similarCount > 0) {
+                  <p class="assist-meta">
+                    {{ item.similarCount }} ähnliche
+                    {{ item.similarCount === 1 ? 'Datei' : 'Dateien' }} in der Bibliothek
+                  </p>
+                }
+              </div>
+              <button type="button" class="icon-btn" title="Entfernen" aria-label="Aus der Liste entfernen" (click)="removeItem(item.id)">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12 5.7 16.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.4z"
+                  />
+                </svg>
+              </button>
+            </header>
+
+            <ul class="suggest-list">
+              @for (s of item.suggestions; track s.id) {
+                <li>
+                  <div class="suggest-main">
+                    <span class="suggest-tag" [attr.data-kind]="s.kind">{{ s.label }}</span>
+                    <strong>{{ s.value }}</strong>
+                    <span class="suggest-reason">{{ s.reason }}</span>
+                    @if (s.tags?.length) {
+                      <span class="suggest-tags">
+                        @for (tag of s.tags; track tag) {
+                          <span class="suggest-tag-chip">{{ tag }}</span>
+                        }
+                      </span>
+                    }
+                  </div>
+                  <div class="suggest-actions">
+                    <button type="button" class="btn btn-ghost btn-tiny" (click)="copyValue(s.value)">
+                      Kopieren
+                    </button>
+                    @if (s.kind === 'folder' || s.label.startsWith('Ordner')) {
+                      <button
+                        type="button"
+                        class="btn btn-primary btn-tiny"
+                        [disabled]="busy()"
+                        (click)="useFolder(item, s)"
+                      >
+                        Ordner anlegen
+                      </button>
+                    } @else if (item.source === 'file' && item.file) {
+                      <button
+                        type="button"
+                        class="btn btn-primary btn-tiny"
+                        [disabled]="busy()"
+                        (click)="useFileUpload(item, s, false)"
+                      >
+                        Importieren
+                      </button>
+                    } @else if (item.source === 'link' && item.url) {
+                      <button
+                        type="button"
+                        class="btn btn-primary btn-tiny"
+                        [disabled]="busy()"
+                        (click)="useLink(item, s)"
+                      >
+                        Link speichern
+                      </button>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          </article>
+        }
+      </div>
+      <button type="button" class="btn btn-ghost clear-btn" (click)="clearItems()">Liste leeren</button>
+    }
+  </div>
+</div>

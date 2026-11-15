@@ -1,0 +1,201 @@
+<div class="shell">
+  <app-sidebar
+    class="sidebar"
+    (dropOnFolder)="dropMove($event)"
+    (openSettings)="openDialog({ type: 'settings' })"
+  />
+
+  <div class="main">
+    @if (store.configured()) {
+      <app-toolbar (action)="runAction($event)" (dropOnFolder)="dropMove($event)" />
+    } @else {
+      <div class="toolbar-spacer"></div>
+    }
+
+    <main class="content" id="content" [attr.aria-busy]="store.loading()">
+      @if (store.loading() && store.entries().length === 0) {
+        <div class="skeletons" aria-label="Wird geladen" role="status">
+          @for (n of [1, 2, 3, 4, 5, 6, 7, 8]; track n) {
+            <div class="skeleton-row">
+              <span class="skeleton sk-thumb"></span>
+              <span class="skeleton sk-line" [style.width.%]="40 + ((n * 17) % 40)"></span>
+            </div>
+          }
+        </div>
+      } @else if (!store.configured()) {
+        <app-empty-state
+          kind="no-library"
+          title="Willkommen bei Printnest"
+          text="Wähle den Ordner, in dem deine 3D-Druck-Dateien liegen. Printnest merkt ihn sich und arbeitet direkt mit den Dateien darin."
+        >
+          <button type="button" class="btn btn-primary" (click)="pickLibrary()" [disabled]="store.busy()">
+            Ordner auswählen …
+          </button>
+          <button type="button" class="btn btn-ghost" (click)="openDialog({ type: 'path' })" [disabled]="store.busy()">
+            Pfad manuell eingeben
+          </button>
+        </app-empty-state>
+      } @else if (store.visibleEntries().length === 0) {
+        @switch (store.view().type) {
+          @case ('search') {
+            <app-empty-state kind="no-results" title="Keine Treffer" [text]="'Für „' + store.search().trim() + '“ wurde nichts gefunden.'">
+              <button type="button" class="btn btn-ghost" (click)="store.setSearch('')">Suche zurücksetzen</button>
+            </app-empty-state>
+          }
+          @case ('rated') {
+            <app-empty-state
+              kind="no-rated"
+              title="Noch nichts gut bewertet"
+              text="Bewerte Drucke mit 1–5 Sternen (Tasten 1–5 auf der Auswahl). Ab 4 Sternen erscheinen sie hier."
+            />
+          }
+          @case ('folder') {
+            @if (store.minRating() > 0) {
+              <app-empty-state kind="no-results" title="Keine Einträge mit dieser Bewertung">
+                <button type="button" class="btn btn-ghost" (click)="store.setMinRating(0)">Filter aufheben</button>
+              </app-empty-state>
+            } @else {
+              <app-empty-state
+                kind="empty-folder"
+                title="Dieser Ordner ist leer"
+                text="Ziehe Dateien oder Ordner aus dem Finder hierher oder importiere sie."
+              >
+                <button type="button" class="btn btn-primary" (click)="runAction('import')">Dateien importieren …</button>
+                <button type="button" class="btn btn-ghost" (click)="runAction('new-folder')">Neuer Ordner</button>
+              </app-empty-state>
+            }
+          }
+          @default {
+            <app-empty-state kind="no-results" title="Keine passenden Dateien" />
+          }
+        }
+      } @else {
+        <app-entry-list
+          [entries]="store.visibleEntries()"
+          [layout]="store.layout()"
+          [sort]="store.sort()"
+          [selectedId]="store.selectedId()"
+          [selectedIds]="store.selectedIds()"
+          [showOrigin]="!store.isFolderView()"
+          (selectEntry)="store.select($event.entry.id, $event.mode)"
+          (openEntry)="openEntry($event)"
+          (openParent)="store.openFolder($event.parentPath ?? '')"
+          (contextMenu)="menu.set($event)"
+          (rate)="store.setRating($event.entry, $event.rating)"
+          (dropOnFolder)="dropMove($event)"
+        />
+      }
+    </main>
+  </div>
+</div>
+
+<input #fileInput class="sr-only" type="file" multiple tabindex="-1" aria-hidden="true" [accept]="accept" (change)="onFilesChosen($event)" />
+
+@if (dropActive()) {
+  <div class="drop-overlay" aria-hidden="true">
+    <div class="drop-card">
+      <app-icon name="import" class="drop-icon" />
+      <p>In „{{ store.locationLabel() }}“ importieren</p>
+      <span>Ordner werden mit Inhalt übernommen, nicht unterstützte Dateien übersprungen.</span>
+    </div>
+  </div>
+}
+
+@if (menu(); as m) {
+  <app-context-menu
+    [items]="menuItems()"
+    [x]="m.x"
+    [y]="m.y"
+    [label]="'Aktionen für ' + m.entry.name"
+    (selected)="onMenuSelected($event)"
+    (closed)="closeMenu()"
+  />
+}
+
+@if (previewEntry(); as entry) {
+  <app-preview-dialog
+    [entry]="entry"
+    [position]="previewLabel()"
+    [hasPrev]="previewHasPrev()"
+    [hasNext]="previewHasNext()"
+    [layout]="store.layout()"
+    [slicerName]="previewSlicer().name"
+    [showSlicer]="previewSlicer().show"
+    (closed)="closePreview()"
+    (navigate)="stepPreview($event)"
+    (chooseSlicer)="closePreview(); openDialog({ type: 'settings' })"
+    (rate)="store.setRating(entry, $event)"
+    (openSlicer)="openInSlicer(entry)"
+    (reveal)="store.reveal(entry)"
+  />
+}
+
+@if (dialog(); as d) {
+  @switch (d.type) {
+    @case ('folder') {
+      <app-folder-dialog [locationLabel]="store.locationLabel()" [busy]="store.busy()" (closed)="closeDialog()" (saved)="createFolder($event)" />
+    }
+    @case ('link') {
+      <app-link-dialog
+        [locationLabel]="store.locationLabel()"
+        [busy]="store.busy()"
+        [initialUrl]="linkDialogUrl()"
+        [editEntry]="linkDialogEdit()"
+        [siblings]="store.entries()"
+        (closed)="closeDialog()"
+        (saved)="saveLink($event)"
+        (checkStatus)="store.checkLink($event)"
+      />
+    }
+    @case ('batch-rename') {
+      @if (batchEntries(); as entries) {
+        <app-batch-rename-dialog
+          [entries]="entries"
+          [siblings]="store.entries()"
+          [folder]="store.currentFolder()"
+          [folderLabel]="store.locationLabel()"
+          [busy]="store.busy()"
+          (closed)="closeDialog()"
+          (apply)="batchRename($event)"
+        />
+      }
+    }
+    @case ('path') {
+      <app-path-dialog
+        [busy]="store.busy()"
+        [currentPath]="store.root()"
+        (closed)="closeDialog()"
+        (pickFolder)="pickLibrary()"
+        (savePath)="saveLibraryPath($event)"
+      />
+    }
+    @case ('settings') {
+      <app-settings-dialog (closed)="closeDialog()" (changeLibrary)="openDialog({ type: 'path' })" />
+    }
+    @case ('shortcuts') {
+      <app-shortcuts-dialog (closed)="closeDialog()" />
+    }
+    @case ('name-assist') {
+      <app-name-assist-dialog
+        [busy]="store.busy()"
+        [folder]="store.currentFolder()"
+        [siblings]="store.entries()"
+        (closed)="closeDialog()"
+        (action)="onNameAssist($event)"
+      />
+    }
+  }
+  @if (dialogEntry(); as entry) {
+    @switch (d.type) {
+      @case ('rename') {
+        <app-rename-dialog [entry]="entry" [busy]="store.busy()" (closed)="closeDialog()" (saved)="rename(entry, $event)" />
+      }
+      @case ('move') {
+        <app-move-dialog [entry]="entry" [busy]="store.busy()" (closed)="closeDialog()" (moved)="move(entry, $event)" />
+      }
+      @case ('delete') {
+        <app-delete-dialog [entry]="entry" [busy]="store.busy()" (closed)="closeDialog()" (confirmed)="trash(entry)" />
+      }
+    }
+  }
+}

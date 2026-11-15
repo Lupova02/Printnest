@@ -1,0 +1,22 @@
+{
+  "files": 2000,
+  "measuredAt": "2026-11-15T15:05:53.993Z",
+  "list": {
+    "frames": 242,
+    "fps": 60.3,
+    "longFrames": 0,
+    "maxFrameMs": 18,
+    "maxOptions": 33,
+    "domNodes": 965,
+    "scrollHeight": 96036
+  },
+  "grid": {
+    "frames": 242,
+    "fps": 60.3,
+    "longFrames": 0,
+    "maxFrameMs": 18,
+    "maxOptions": 45,
+    "domNodes": 1195,
+    "scrollHeight": 94836
+  }
+}

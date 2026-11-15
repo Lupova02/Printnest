@@ -1,0 +1,75 @@
+:host {
+  --thumb-tint: var(--accent);
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  overflow: hidden;
+  border-radius: var(--radius-s);
+  background: color-mix(in srgb, var(--thumb-tint) 12%, var(--bg-sunken));
+  color: var(--thumb-tint);
+}
+
+:host(.is-card) {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+:host([data-kind='stl']) { --thumb-tint: var(--stl); }
+:host([data-kind='3mf']) { --thumb-tint: var(--threemf); }
+:host([data-kind='f3d']) { --thumb-tint: var(--f3d); }
+:host([data-kind='pdf']) { --thumb-tint: var(--pdf); }
+:host([data-kind='mp4']) { --thumb-tint: var(--mp4); }
+:host([data-kind='img']) { --thumb-tint: var(--img); }
+:host([data-kind='link']) { --thumb-tint: var(--link); }
+:host([data-kind='folder']) { --thumb-tint: var(--folder); }
+
+img,
+video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity var(--dur) ease;
+}
+
+:host([data-kind='img']) img,
+:host([data-kind='mp4']) video {
+  object-fit: cover;
+}
+
+:host(.is-loaded) img,
+:host(.is-loaded) video {
+  opacity: 1;
+}
+
+.glyph {
+  font-size: 20px;
+}
+
+:host(.is-card) .glyph {
+  font-size: 48px;
+}
+
+.badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--thumb-tint);
+}
+
+:host(.is-card) .badge {
+  font-size: 15px;
+}
+
+.shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+}
